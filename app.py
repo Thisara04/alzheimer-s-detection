@@ -167,9 +167,7 @@ if mode == "Awareness & Education":
             thinking, behavioral, and social skills that affects a person's ability to function independently.
         """)
     with col2:
-        # Replace 'brain_anatomy.jpg' with your image path
-        st.image("https://via.placeholder.com/400x300.png?text=Brain+Atrophy+Comparison", 
-                 caption="Brain changes in Alzheimer's")
+        st.image("Brain_shrink.png", caption="Brain changes in Alzheimer's")
         
 
     st.divider()
