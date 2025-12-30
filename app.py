@@ -85,16 +85,16 @@ if mode == "Risk Assessment":
             depression = st.selectbox("Depression", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
             sleep = st.selectbox("Sleep Quality", [0,1,2], format_func=lambda x: ["Poor","Average","Good"][x])
             diet = st.selectbox("Dietary Habits", [0,1,2], format_func=lambda x: ["Healthy","Average","Unhealthy"][x])
-            pollution = st.selectbox("Air Pollution", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            pollution = st.selectbox("Air Pollution Exposure", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
             employment = st.selectbox("Employment", [0,1,2], format_func=lambda x: ["Employed","Unemployed","Retired"][x])
             marital = st.selectbox("Marital Status", [0,1,2], format_func=lambda x: ["Single","Widowed","Married"][x])
-            genetic = st.selectbox("Genetic (APOE-ε4)", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
+            genetic = st.selectbox("Genetic Risk Factor(APOE-ε4)", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
             social = st.selectbox("Social Engagement", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
-            income = st.selectbox("Income", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            income = st.selectbox("Income (compared to the country you live in)", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
             stress = st.selectbox("Stress Level", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
-            living = st.selectbox("Living", [0, 1], format_func=lambda x: "Urban" if x==0 else "Rural")
+            living = st.selectbox("Living Area", [0, 1], format_func=lambda x: "Urban" if x==0 else "Rural")
         
-        country = st.selectbox("Country", COUNTRY_LIST)
+        country = st.selectbox("Country(select the most relevant or related country to you)", COUNTRY_LIST)
         submit = st.form_submit_button("Predict Risk")
 
     if submit:
