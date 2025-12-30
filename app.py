@@ -4,24 +4,19 @@ import pandas as pd
 import numpy as np
 from PIL import Image
 
-# Ensure model.py (containing build_model) and your weights are in the directory
+# Load the model
 try:
     from model import build_model
 except ImportError:
-    st.error("Error: 'model.py' not found. Please ensure it is in the app directory.")
+    st.error("Please ensure 'model.py' is in the same directory.")
 
 # ==========================================
-# 1. Page Configuration & Models
+# 1. Setup & Constants
 # ==========================================
-st.set_page_config(
-    page_title="Alzheimer's Diagnostic Suite",
-    page_icon="🧠",
-    layout="wide"
-)
+st.set_page_config(page_title="Alzheimer's Suite", layout="wide")
 
 @st.cache_resource
 def load_risk_model():
-    # Placeholder for your lifestyle model
     return joblib.load("ensemble_calibrated.pkl")
 
 @st.cache_resource
@@ -30,116 +25,128 @@ def load_mri_model():
     model.load_weights("alzheimers_mri_efficientnetB2.weights.h5")
     return model
 
-# Constants
 THRESHOLD_RISK = 0.45
 IMG_SIZE = 224
 CLASS_NAMES = ["Mild Impairment", "Moderate Impairment", "No Impairment", "Very Mild Impairment"]
-
-# VALIDATION SETTINGS
-# If Entropy is HIGH, the model is "confused" (Not an MRI)
-# If Confidence is LOW, the model doesn't recognize the patterns
-ENTROPY_THRESHOLD = 1.20  
-CONFIDENCE_THRESHOLD = 0.65 
+COUNTRY_LIST = ["Australia","Brazil","Canada","China","France","Germany","India","Italy","Japan","Mexico","Norway","Russia","Saudi Arabia","South Africa","South Korea","Spain","Sweden","UK","USA"]
 
 # ==========================================
-# 2. Sidebar Navigation
+# 2. MRI Validation Logic
+# ==========================================
+def validate_is_mri(img):
+    """Checks if the image matches MRI structural profiles vs digits/noise."""
+    img_gray = img.convert("L").resize((100, 100))
+    arr = np.array(img_gray)
+    
+    # 1. Edge/Corner Check: Real MRIs are usually black in corners
+    corners = [arr[:10,:10], arr[:10,-10:], arr[-10:,:10], arr[-10:,-10:]]
+    corner_avg = np.mean(corners)
+    
+    # 2. Intensity Variance: Digits/Text have high contrast (extreme black/white)
+    # MRIs have a smoother grayscale distribution (organic)
+    std_dev = np.std(arr)
+    
+    if corner_avg > 60: # Too bright for a medical scan background
+        return False, "Image background is too bright. Medical MRIs usually have dark backgrounds."
+    if std_dev > 90: # Too much high-contrast (likely text or a digit)
+        return False, "High contrast detected. This looks like a graphic or digit, not an MRI."
+    return True, "Success"
+
+# ==========================================
+# 3. Sidebar & Navigation
 # ==========================================
 st.sidebar.title("🧠 Alzheimer's Suite")
-app_mode = st.sidebar.radio("Select Analysis Module", ["Lifestyle Risk Assessment", "MRI Image Classification"])
-st.sidebar.divider()
-st.sidebar.warning("⚠️ Educational use only — not a medical diagnostic tool.")
+mode = st.sidebar.radio("Module", ["Risk Assessment", "MRI Classifier"])
 
 # ==========================================
-# 3. Module 1: Lifestyle Risk Assessment
+# 4. Lifestyle Module (Using your exact Mapping)
 # ==========================================
-if app_mode == "Lifestyle Risk Assessment":
-    st.title("📋 Alzheimer’s Risk Prediction")
-    risk_model = load_risk_model()
-
-    with st.form("risk_form"):
-        col1, col2 = st.columns(2)
-        with col1:
+if mode == "Risk Assessment":
+    st.title("📋 Clinical Risk Calculator")
+    
+    with st.form("input_form"):
+        c1, c2 = st.columns(2)
+        with c1:
             age = st.slider("Age", 40, 100, 65)
-            gender = st.selectbox("Gender", [0, 1], format_func=lambda x: "Female" if x == 0 else "Male")
-            edu_label = st.selectbox("Education", ["No formal education", "High school", "Bachelor’s degree", "Master’s degree", "Doctorate"])
-            bmi = st.slider("BMI", 15.0, 40.0, 25.0)
-            cognitive_score = st.slider("Cognitive Test Score", 0, 100, 70)
-        with col2:
-            family_history = st.selectbox("Family History", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
-            diabetes = st.selectbox("Diabetes", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
-            genetic = st.selectbox("Genetic Risk (APOE-ε4)", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
-            sleep = st.selectbox("Sleep Quality", [0, 1, 2], format_func=lambda x: ["Poor", "Average", "Good"][x])
-            stress = st.selectbox("Stress Levels", [0, 1, 2], format_func=lambda x: ["Low", "Medium", "High"][x])
+            gender = st.selectbox("Gender", [0, 1], format_func=lambda x: "Female" if x==0 else "Male")
+            edu_map = {"No":0, "Primary":5, "Secondary":8, "High":12, "Diploma":13, "Bachelor":16, "Master":18, "PhD":21}
+            edu = st.selectbox("Education Level", list(edu_map.keys()))
+            bmi = st.number_input("BMI", 10.0, 50.0, 25.0)
+            physical = st.selectbox("Physical Activity", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            smoking = st.selectbox("Smoking Status", [0,1,2], format_func=lambda x: ["Never","Former","Current"][x])
+            alcohol = st.selectbox("Alcohol Consumption", [0,1,2], format_func=lambda x: ["Never","Occasionally","Regularly"][x])
+            diabetes = st.selectbox("Diabetes", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
+            hypertension = st.selectbox("Hypertension", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
+            cholesterol = st.selectbox("Cholesterol", [0, 1], format_func=lambda x: "Normal" if x==0 else "High")
+            family = st.selectbox("Family History", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
         
-        country_list = ["Australia","Brazil","Canada","China","France","Germany","India","Italy","Japan","USA","UK"]
-        country = st.selectbox("Country", country_list)
-        submit_risk = st.form_submit_button("🔍 Calculate Risk Score")
+        with c2:
+            cog_score = st.slider("Cognitive Score", 0, 100, 70)
+            depression = st.selectbox("Depression", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            sleep = st.selectbox("Sleep Quality", [0,1,2], format_func=lambda x: ["Poor","Average","Good"][x])
+            diet = st.selectbox("Dietary Habits", [0,1,2], format_func=lambda x: ["Healthy","Average","Unhealthy"][x])
+            pollution = st.selectbox("Air Pollution", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            employment = st.selectbox("Employment", [0,1,2], format_func=lambda x: ["Employed","Unemployed","Retired"][x])
+            marital = st.selectbox("Marital Status", [0,1,2], format_func=lambda x: ["Single","Widowed","Married"][x])
+            genetic = st.selectbox("Genetic (APOE-ε4)", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
+            social = st.selectbox("Social Engagement", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            income = st.selectbox("Income", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            stress = st.selectbox("Stress Level", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
+            living = st.selectbox("Living", [0, 1], format_func=lambda x: "Urban" if x==0 else "Rural")
+        
+        country = st.selectbox("Country", COUNTRY_LIST)
+        submit = st.form_submit_button("Predict Risk")
 
-    if submit_risk:
-        # Simplified encoding for demonstration
-        proba = 0.25 # Replace with: risk_model.predict_proba(df)[0][1]
-        st.metric("Risk Probability", f"{proba:.2%}")
+    if submit:
+        # Construct exact column order based on your list
+        row = {
+            'Age': age, 'Gender': gender, 'Education Level': edu_map[edu], 'BMI': bmi,
+            'Physical Activity Level': physical, 'Smoking Status': smoking, 'Alcohol Consumption': alcohol,
+            'Diabetes': diabetes, 'Hypertension': hypertension, 'Cholesterol Level': cholesterol,
+            'Family History of Alzheimer’s': family, 'Cognitive Test Score': cog_score,
+            'Depression Level': depression, 'Sleep Quality': sleep, 'Dietary Habits': diet,
+            'Air Pollution Exposure': pollution, 'Employment Status': employment, 'Marital Status': marital,
+            'Genetic Risk Factor (APOE-ε4 allele)': genetic, 'Social Engagement Level': social,
+            'Income Level': income, 'Stress Levels': stress, 'Urban vs Rural Living': living
+        }
+        for c in COUNTRY_LIST:
+            row[f"Country_{c}"] = 1 if country == c else 0
+        
+        df_input = pd.DataFrame([row])
+        risk_model = load_risk_model()
+        proba = risk_model.predict_proba(df_input)[0][1]
+        
+        st.metric("Probability", f"{proba:.2%}")
+        if proba > THRESHOLD_RISK: st.error("Higher Risk Detected")
+        else: st.success("Lower Risk Detected")
 
 # ==========================================
-# 4. Module 2: MRI Image Classifier (with Identification Logic)
+# 5. MRI Module (With Digit/Noise Filtering)
 # ==========================================
 else:
-    st.title("🧠 MRI Analysis & Identification")
-    st.write("Upload an image. The system will first verify if it is a Brain MRI.")
+    st.title("🧠 MRI Stage Classifier")
+    uploaded_file = st.file_uploader("Upload Scan", type=["jpg","png","jpeg"])
     
-    mri_model = load_mri_model()
-    uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file)
+    if uploaded_file:
+        img = Image.open(uploaded_file)
+        st.image(img, width=300)
         
-        # UI Layout
-        col_img, col_pred = st.columns([1, 1])
-        with col_img:
-            st.image(image, caption="Uploaded Image", use_container_width=True)
+        # VALIDATION GATE
+        is_mri, msg = validate_is_mri(img)
         
-        # Preprocessing
-        img_prep = image.convert("RGB").resize((IMG_SIZE, IMG_SIZE))
-        img_array = np.array(img_prep, dtype=np.float32) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-        
-        with st.spinner("Verifying image type and analyzing..."):
-            preds = mri_model.predict(img_array)[0]
-        
-        confidence = float(np.max(preds))
-        predicted_class = int(np.argmax(preds))
-        entropy = float(-np.sum(preds * np.log(preds + 1e-8)))
-
-        with col_pred:
-            # STEP 1: IDENTIFICATION GATE
-            if entropy > ENTROPY_THRESHOLD or confidence < CONFIDENCE_THRESHOLD:
-                st.error("### ❌ Image Identification Failed")
-                st.write("""
-                The system has determined that this image is **not a valid Brain MRI scan**. 
-                
-                **Possible reasons:**
-                * The image is not a medical scan (e.g., a photo, a diagram).
-                * The MRI is of a different body part (e.g., knee, chest).
-                * The image quality is too low for the AI to recognize brain structures.
-                """)
-                st.info(f"**Diagnostic Info:** Uncertainty level (Entropy) is too high ({entropy:.2f}).")
+        if not is_mri:
+            st.error(f"❌ Rejected: {msg}")
+        else:
+            mri_model = load_mri_model()
+            # Preprocess
+            img_prep = img.convert("RGB").resize((IMG_SIZE, IMG_SIZE))
+            img_arr = np.array(img_prep) / 255.0
+            img_arr = np.expand_dims(img_arr, axis=0)
             
-            # STEP 2: CLASSIFICATION (Only if it passes identification)
+            preds = mri_model.predict(img_arr)[0]
+            conf = np.max(preds)
+            
+            if conf < 0.60:
+                st.warning("⚠️ Unclear Image. This might not be a standard Brain MRI.")
             else:
-                st.success("### ✅ Brain MRI Identified")
-                st.write(f"The system is confident this is a brain scan. Proceeding to stage analysis...")
-                st.divider()
-                
-                st.subheader(f"Result: {CLASS_NAMES[predicted_class]}")
-                st.progress(confidence)
-                st.write(f"Analysis Confidence: **{confidence * 100:.2f}%**")
-                
-                with st.expander("View Probability Distribution"):
-                    for i, name in enumerate(CLASS_NAMES):
-                        st.write(f"{name}: {preds[i]*100:.1f}%")
-
-# ==========================================
-# 5. Global Footer
-# ==========================================
-st.markdown("---")
-st.caption("Developed for medical research and educational purposes.")
+                st.success(f"Result: {CLASS_NAMES[np.argmax(preds)]} ({conf:.2%})")
