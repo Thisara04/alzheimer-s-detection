@@ -153,7 +153,7 @@ else:
 # ==========================================
 # 6. Module 3: Alzheimer's Awareness Hub
 # ==========================================
-elif mode == "Awareness & Education":
+if mode == "Awareness & Education":
     st.title("🧠 Understanding Alzheimer's Disease")
     st.write("Knowledge is the first step in prevention and care.")
     
