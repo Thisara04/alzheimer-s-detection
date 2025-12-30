@@ -191,8 +191,9 @@ if mode == "Awareness & Education":
         st.write("* Changes in sleep patterns, such as sleeping during the day and becoming restless at night.")
         
 
-#[Image of Alzheimer's disease progression stages]
-    st.image("images/brain_comparison.jpg", caption="Brain Comparison")
+    #[Image of Alzheimer's disease progression stages]
+    st.image("brain_comparison.jpg", caption="Brain Comparison")
+    
 
 
     with tab3:
@@ -214,8 +215,8 @@ if mode == "Awareness & Education":
         """)
         
 
-#[Image of amyloid plaques and neurofibrillary tangles in the brain]
-    st.image("https://example.com/medical-image.jpg")
+    #[Image of amyloid plaques and neurofibrillary tangles in the brain]
+    st.image("plaques-tangles.png", caption="amyloid plaques and neurofibrillary tangles in the brain")
 
     with col4:
         st.subheader("🛡️ Prevention & Lifestyle")
