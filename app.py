@@ -213,7 +213,7 @@ elif mode == "Awareness & Education":
         """)
         
 
-[Image of amyloid plaques and neurofibrillary tangles in the brain]
+#[Image of amyloid plaques and neurofibrillary tangles in the brain]
 
     with col4:
         st.subheader("🛡️ Prevention & Lifestyle")
