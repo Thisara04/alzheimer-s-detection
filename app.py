@@ -191,7 +191,7 @@ elif mode == "Awareness & Education":
         st.write("* Changes in sleep patterns, such as sleeping during the day and becoming restless at night.")
         
 
-[Image of Alzheimer's disease progression stages]
+#[Image of Alzheimer's disease progression stages]
 
 
     with tab3:
