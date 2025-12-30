@@ -1,27 +1,20 @@
 import streamlit as st
 import joblib
-import numpy as np
 import pandas as pd
 
 # -----------------------------
-# Load trained calibrated model
+# Load calibrated ensemble model
 # -----------------------------
 @st.cache_resource
 def load_model():
     return joblib.load("ensemble_calibrated.pkl")
 
 model = load_model()
-
 THRESHOLD = 0.45
 
-st.set_page_config(
-    page_title="Alzheimer’s Risk Prediction",
-    layout="centered"
-)
-
+st.set_page_config(page_title="Alzheimer’s Risk Prediction", layout="centered")
 st.title("🧠 Alzheimer’s Disease Risk Prediction")
-st.markdown("Predict the probability of Alzheimer's diagnosis using patient data.")
-
+st.caption("This tool estimates risk probability — not a medical diagnosis.")
 st.divider()
 
 # -----------------------------
@@ -30,71 +23,158 @@ st.divider()
 st.subheader("Patient Information")
 
 age = st.slider("Age", 40, 100, 65)
-gender = st.selectbox("Gender", ["Female", "Male"])
-education = st.slider("Education Level", 0, 20, 10)
-bmi = st.slider("BMI", 15, 40, 25)
-physical = st.selectbox("Physical Activity Level", ["Low", "Medium", "High"])
-smoking = st.selectbox("Smoking Status", ["Never", "Former", "Current"])
-alcohol = st.selectbox("Alcohol Consumption", ["Never", "Occasionally", "Regularly"])
-diabetes = st.selectbox("Diabetes", ["No", "Yes"])
-hypertension = st.selectbox("Hypertension", ["No", "Yes"])
-cholesterol = st.selectbox("Cholesterol Level", ["Normal", "High"])
-family_history = st.selectbox("Family History of Alzheimer’s", ["No", "Yes"])
-cognitive_score = st.slider("Cognitive Test Score", 0, 100, 70)
-depression = st.selectbox("Depression Level", ["Low", "Medium", "High"])
-sleep = st.selectbox("Sleep Quality", ["Poor", "Average", "Good"])
-diet = st.selectbox("Dietary Habits", ["Healthy", "Average", "Unhealthy"])
-pollution = st.selectbox("Air Pollution Exposure", ["Low", "Medium", "High"])
-employment = st.selectbox("Employment Status", ["Employed", "Unemployed", "Retired"])
-marital = st.selectbox("Marital Status", ["Single", "Widowed", "Married"])
-genetic = st.selectbox("Genetic Risk Factor (APOE-ε4)", ["No", "Yes"])
-social = st.selectbox("Social Engagement Level", ["Low", "Medium", "High"])
-income = st.selectbox("Income Level", ["Low", "Medium", "High"])
-stress = st.selectbox("Stress Levels", ["Low", "Medium", "High"])
-living = st.selectbox("Urban vs Rural Living", ["Urban", "Rural"])
 
-country = st.selectbox("Country", [
+gender = st.selectbox("Gender", [0, 1], format_func=lambda x: "Female" if x == 0 else "Male")
+
+# ✅ Education level (interpretable → numeric)
+education_label = st.selectbox(
+    "Highest Education Level",
+    [
+        "No formal education",
+        "Primary school",
+        "Secondary school",
+        "High school",
+        "Diploma / Vocational",
+        "Bachelor’s degree",
+        "Master’s degree",
+        "Doctorate / PhD"
+    ]
+)
+
+education_map = {
+    "No formal education": 0,
+    "Primary school": 5,
+    "Secondary school": 8,
+    "High school": 12,
+    "Diploma / Vocational": 13,
+    "Bachelor’s degree": 16,
+    "Master’s degree": 18,
+    "Doctorate / PhD": 21
+}
+education = education_map[education_label]
+
+bmi = st.slider("BMI", 15.0, 40.0, 25.0)
+
+physical = st.selectbox(
+    "Physical Activity Level", [0, 1, 2],
+    format_func=lambda x: ["Low", "Medium", "High"][x]
+)
+
+smoking = st.selectbox(
+    "Smoking Status", [0, 1, 2],
+    format_func=lambda x: ["Never", "Former", "Current"][x]
+)
+
+alcohol = st.selectbox(
+    "Alcohol Consumption", [0, 1, 2],
+    format_func=lambda x: ["Never", "Occasionally", "Regularly"][x]
+)
+
+diabetes = st.selectbox("Diabetes", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
+hypertension = st.selectbox("Hypertension", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
+cholesterol = st.selectbox("Cholesterol Level", [0, 1], format_func=lambda x: "Normal" if x == 0 else "High")
+family_history = st.selectbox("Family History of Alzheimer’s", [0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
+
+cognitive_score = st.slider("Cognitive Test Score", 0, 100, 70)
+
+depression = st.selectbox(
+    "Depression Level", [0, 1, 2],
+    format_func=lambda x: ["Low", "Medium", "High"][x]
+)
+
+sleep = st.selectbox(
+    "Sleep Quality", [0, 1, 2],
+    format_func=lambda x: ["Poor", "Average", "Good"][x]
+)
+
+diet = st.selectbox(
+    "Dietary Habits", [0, 1, 2],
+    format_func=lambda x: ["Healthy", "Average", "Unhealthy"][x]
+)
+
+pollution = st.selectbox(
+    "Air Pollution Exposure", [0, 1, 2],
+    format_func=lambda x: ["Low", "Medium", "High"][x]
+)
+
+employment = st.selectbox(
+    "Employment Status", [0, 1, 2],
+    format_func=lambda x: ["Employed", "Unemployed", "Retired"][x]
+)
+
+marital = st.selectbox(
+    "Marital Status", [0, 1, 2],
+    format_func=lambda x: ["Single", "Widowed", "Married"][x]
+)
+
+genetic = st.selectbox(
+    "Genetic Risk Factor (APOE-ε4 allele)", [0, 1],
+    format_func=lambda x: "No" if x == 0 else "Yes"
+)
+
+social = st.selectbox(
+    "Social Engagement Level", [0, 1, 2],
+    format_func=lambda x: ["Low", "Medium", "High"][x]
+)
+
+income = st.selectbox(
+    "Income Level", [0, 1, 2],
+    format_func=lambda x: ["Low", "Medium", "High"][x]
+)
+
+stress = st.selectbox(
+    "Stress Levels", [0, 1, 2],
+    format_func=lambda x: ["Low", "Medium", "High"][x]
+)
+
+living = st.selectbox(
+    "Urban vs Rural Living", [0, 1],
+    format_func=lambda x: "Urban" if x == 0 else "Rural"
+)
+
+# -----------------------------
+# Country (One-Hot Encoding)
+# -----------------------------
+country_list = [
     "Australia","Brazil","Canada","China","France","Germany","India","Italy",
     "Japan","Mexico","Norway","Russia","Saudi Arabia","South Africa",
     "South Korea","Spain","Sweden","UK","USA"
-])
+]
+
+country = st.selectbox("Country", country_list)
 
 # -----------------------------
-# Encode inputs
+# Encode input
 # -----------------------------
 def encode_input():
     data = {
         "Age": age,
-        "Gender": 1 if gender == "Male" else 0,
+        "Gender": gender,
         "Education Level": education,
         "BMI": bmi,
-        "Physical Activity Level": {"Low":0,"Medium":1,"High":2}[physical],
-        "Smoking Status": {"Never":0,"Former":1,"Current":2}[smoking],
-        "Alcohol Consumption": {"Never":0,"Occasionally":1,"Regularly":2}[alcohol],
-        "Diabetes": 1 if diabetes == "Yes" else 0,
-        "Hypertension": 1 if hypertension == "Yes" else 0,
-        "Cholesterol Level": 1 if cholesterol == "High" else 0,
-        "Family History of Alzheimer’s": 1 if family_history == "Yes" else 0,
+        "Physical Activity Level": physical,
+        "Smoking Status": smoking,
+        "Alcohol Consumption": alcohol,
+        "Diabetes": diabetes,
+        "Hypertension": hypertension,
+        "Cholesterol Level": cholesterol,
+        "Family History of Alzheimer’s": family_history,
         "Cognitive Test Score": cognitive_score,
-        "Depression Level": {"Low":0,"Medium":1,"High":2}[depression],
-        "Sleep Quality": {"Poor":0,"Average":1,"Good":2}[sleep],
-        "Dietary Habits": {"Healthy":0,"Average":1,"Unhealthy":2}[diet],
-        "Air Pollution Exposure": {"Low":0,"Medium":1,"High":2}[pollution],
-        "Employment Status": {"Employed":0,"Unemployed":1,"Retired":2}[employment],
-        "Marital Status": {"Single":0,"Widowed":1,"Married":2}[marital],
-        "Genetic Risk Factor (APOE-ε4 allele)": 1 if genetic == "Yes" else 0,
-        "Social Engagement Level": {"Low":0,"Medium":1,"High":2}[social],
-        "Income Level": {"Low":0,"Medium":1,"High":2}[income],
-        "Stress Levels": {"Low":0,"Medium":1,"High":2}[stress],
-        "Urban vs Rural Living": 1 if living == "Rural" else 0,
+        "Depression Level": depression,
+        "Sleep Quality": sleep,
+        "Dietary Habits": diet,
+        "Air Pollution Exposure": pollution,
+        "Employment Status": employment,
+        "Marital Status": marital,
+        "Genetic Risk Factor (APOE-ε4 allele)": genetic,
+        "Social Engagement Level": social,
+        "Income Level": income,
+        "Stress Levels": stress,
+        "Urban vs Rural Living": living
     }
 
     # One-hot countries
-    for c in [
-        "Australia","Brazil","Canada","China","France","Germany","India","Italy",
-        "Japan","Mexico","Norway","Russia","Saudi Arabia","South Africa",
-        "South Korea","Spain","Sweden","UK","USA"
-    ]:
+    for c in country_list:
         data[f"Country_{c}"] = 1 if country == c else 0
 
     return pd.DataFrame([data])
@@ -111,11 +191,11 @@ if st.button("🔍 Predict Alzheimer’s Risk"):
     st.divider()
     st.subheader("Prediction Result")
 
-    st.metric("Alzheimer’s Probability", f"{proba:.2%}")
+    st.metric("Predicted Probability", f"{proba:.2%}")
 
     if prediction == 1:
-        st.error("⚠️ High Risk of Alzheimer’s Disease")
+        st.error("⚠️ Higher Risk of Alzheimer’s Disease")
     else:
-        st.success("✅ Low Risk of Alzheimer’s Disease")
+        st.success("✅ Lower Risk of Alzheimer’s Disease")
 
     st.caption(f"Decision threshold: {THRESHOLD}")
