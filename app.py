@@ -78,7 +78,7 @@ if mode == "Risk Assessment":
             diabetes = st.selectbox("Diabetes", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
             hypertension = st.selectbox("Hypertension", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
             cholesterol = st.selectbox("Cholesterol", [0, 1], format_func=lambda x: "Normal" if x==0 else "High")
-            family = st.selectbox("Family History", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
+            family = st.selectbox("Family History of Alzheimer's", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
         
         with c2:
             cog_score = st.slider("Cognitive Score", 0, 100, 70)
@@ -88,7 +88,7 @@ if mode == "Risk Assessment":
             pollution = st.selectbox("Air Pollution Exposure", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
             employment = st.selectbox("Employment", [0,1,2], format_func=lambda x: ["Employed","Unemployed","Retired"][x])
             marital = st.selectbox("Marital Status", [0,1,2], format_func=lambda x: ["Single","Widowed","Married"][x])
-            genetic = st.selectbox("Genetic Risk Factor(APOE-ε4)", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
+            genetic = st.selectbox("Has Genetic Risk Factor(APOE-ε4)", [0, 1], format_func=lambda x: "No" if x==0 else "Yes")
             social = st.selectbox("Social Engagement", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
             income = st.selectbox("Income (compared to the country you live in)", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
             stress = st.selectbox("Stress Level", [0,1,2], format_func=lambda x: ["Low","Medium","High"][x])
