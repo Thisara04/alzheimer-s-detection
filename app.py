@@ -192,7 +192,7 @@ if mode == "Awareness & Education":
         
 
 #[Image of Alzheimer's disease progression stages]
-    st.image("images/brain_comparison.png", caption="Brain Comparison")
+    st.image("images/brain_comparison.jpg", caption="Brain Comparison")
 
 
     with tab3:
