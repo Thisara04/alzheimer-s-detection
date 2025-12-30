@@ -56,7 +56,7 @@ def validate_is_mri(img):
 # 3. Sidebar & Navigation
 # ==========================================
 st.sidebar.title("🧠 Alzheimer's Suite")
-mode = st.sidebar.radio("Module", ["Risk Assessment", "MRI Classifier"])
+mode = st.sidebar.radio("Module", ["Risk Assessment", "MRI Classifier", "Awareness & Education"])
 
 # ==========================================
 # 4. Lifestyle Module (Using your exact Mapping)
@@ -150,3 +150,81 @@ else:
                 st.warning("⚠️ Unclear Image. This might not be a standard Brain MRI.")
             else:
                 st.success(f"Result: {CLASS_NAMES[np.argmax(preds)]} ({conf:.2%})")
+# ==========================================
+# 6. Module 3: Alzheimer's Awareness Hub
+# ==========================================
+elif mode == "Awareness & Education":
+    st.title("🧠 Understanding Alzheimer's Disease")
+    st.write("Knowledge is the first step in prevention and care.")
+    
+    # --- Section 1: What is Alzheimer's? ---
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        st.subheader("What is Alzheimer’s?")
+        st.write("""
+            Alzheimer’s disease is a progressive neurologic disorder that causes the brain to shrink (atrophy) 
+            and brain cells to die. It is the most common cause of dementia — a continuous decline in 
+            thinking, behavioral, and social skills that affects a person's ability to function independently.
+        """)
+    with col2:
+        # Replace 'brain_anatomy.jpg' with your image path
+        st.image("https://via.placeholder.com/400x300.png?text=Brain+Atrophy+Comparison", 
+                 caption="Brain changes in Alzheimer's")
+        
+
+    st.divider()
+
+    # --- Section 2: Stages of the Disease ---
+    st.subheader("📊 The Stages of Alzheimer's")
+    tab1, tab2, tab3 = st.tabs(["Early Stage", "Middle Stage", "Late Stage"])
+    
+    with tab1:
+        st.markdown("#### **Mild (Early-stage)**")
+        st.write("* Forgetting familiar words or the location of everyday objects.")
+        st.write("* Trouble remembering names when introduced to new people.")
+        st.write("* Greater difficulty performing tasks in social or work settings.")
+        
+    with tab2:
+        st.markdown("#### **Moderate (Middle-stage)**")
+        st.write("* Being unable to recall their own address or telephone number.")
+        st.write("* Confusion about where they are or what day it is.")
+        st.write("* Changes in sleep patterns, such as sleeping during the day and becoming restless at night.")
+        
+
+[Image of Alzheimer's disease progression stages]
+
+
+    with tab3:
+        st.markdown("#### **Severe (Late-stage)**")
+        st.write("* Require around-the-clock assistance with personal care.")
+        st.write("* Lose awareness of recent experiences as well as of their surroundings.")
+        st.write("* Experience changes in physical abilities, including the ability to walk, sit and, eventually, swallow.")
+
+    st.divider()
+
+    # --- Section 3: Causes & Risk Factors ---
+    col3, col4 = st.columns(2)
+    with col3:
+        st.subheader("🧪 Probable Causes")
+        st.info("""
+        **1. Plaques:** Clumps of a protein called beta-amyloid that damage and destroy brain cells.  
+        **2. Tangles:** Fibers of a protein called tau that build up inside cells, blocking the transport of nutrients.  
+        **3. Neuroinflammation:** Chronic inflammation in the brain that prevents normal cleaning processes.
+        """)
+        
+
+[Image of amyloid plaques and neurofibrillary tangles in the brain]
+
+    with col4:
+        st.subheader("🛡️ Prevention & Lifestyle")
+        st.success("""
+        * **Physical Activity:** Regular exercise improves blood flow to the brain.
+        * **Heart-Healthy Diet:** Diets like the 'MIND' or 'Mediterranean' diet.
+        * **Cognitive Reserve:** Keeping the brain active with reading, puzzles, and learning new skills.
+        * **Social Connection:** Strong social ties are linked to lower risk.
+        """)
+
+    # --- Section 4: Video/Visual Help ---
+    st.subheader("🎥 Helpful Resources")
+    st.video("https://www.youtube.com/watch?v=yJXTXN4xrI8") # Example educational video
+    st.caption("Video source: Alzheimer's Association")
