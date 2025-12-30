@@ -11,24 +11,41 @@ except ImportError:
     st.error("Please ensure 'model.py' is in the same directory.")
 
 # ==========================================
-# 1. Setup & Constants
+# 1. Setup, Branding & Constants
 # ==========================================
-st.set_page_config(page_title="Alzheimer's Suite", layout="wide")
+# Browser tab configuration
+st.set_page_config(
+    page_title="NeuroLens | Alzheimer's Detection", 
+    page_icon="🧠", 
+    layout="wide"
+)
 
+# Main Page Header
+st.title("🔬 NeuroLens: Alzheimer's Detection System")
+st.markdown("---")
+
+# --- Constants & Data ---
+THRESHOLD_RISK = 0.45
+IMG_SIZE = 224
+CLASS_NAMES = ["Mild Impairment", "Moderate Impairment", "No Impairment", "Very Mild Impairment"]
+COUNTRY_LIST = [
+    "Australia","Brazil","Canada","China","France","Germany","India","Italy","Japan",
+    "Mexico","Norway","Russia","Saudi Arabia","South Africa","South Korea","Spain",
+    "Sweden","UK","USA"
+]
+
+# --- Model Loading Functions ---
 @st.cache_resource
 def load_risk_model():
+    """Loads the lifestyle/clinical risk model."""
     return joblib.load("ensemble_calibrated.pkl")
 
 @st.cache_resource
 def load_mri_model():
+    """Loads the Deep Learning MRI model."""
     model = build_model()
     model.load_weights("alzheimers_mri_efficientnetB2.weights.h5")
     return model
-
-THRESHOLD_RISK = 0.45
-IMG_SIZE = 224
-CLASS_NAMES = ["Mild Impairment", "Moderate Impairment", "No Impairment", "Very Mild Impairment"]
-COUNTRY_LIST = ["Australia","Brazil","Canada","China","France","Germany","India","Italy","Japan","Mexico","Norway","Russia","Saudi Arabia","South Africa","South Korea","Spain","Sweden","UK","USA"]
 
 # ==========================================
 # 2. MRI Validation Logic
