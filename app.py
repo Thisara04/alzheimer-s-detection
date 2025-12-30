@@ -123,7 +123,7 @@ if mode == "Risk Assessment":
 # ==========================================
 # 5. MRI Module (With Digit/Noise Filtering)
 # ==========================================
-else:
+elif mode == "MRI Classifier":
     st.title("🧠 MRI Stage Classifier")
     uploaded_file = st.file_uploader("Upload Scan", type=["jpg","png","jpeg"])
     
