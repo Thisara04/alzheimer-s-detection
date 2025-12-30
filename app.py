@@ -192,6 +192,7 @@ if mode == "Awareness & Education":
         
 
 #[Image of Alzheimer's disease progression stages]
+    st.image("images/brain_comparison.png", caption="Brain Comparison")
 
 
     with tab3:
@@ -214,6 +215,7 @@ if mode == "Awareness & Education":
         
 
 #[Image of amyloid plaques and neurofibrillary tangles in the brain]
+    st.image("https://example.com/medical-image.jpg")
 
     with col4:
         st.subheader("🛡️ Prevention & Lifestyle")
